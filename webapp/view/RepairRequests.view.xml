@@ -1,0 +1,150 @@
+<mvc:View
+    controllerName="com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.RepairRequests"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page showHeader="false" class="earmmsContentPage" enableScrolling="true">
+        <content>
+            <VBox class="earmmsPageContent">
+
+                <!-- ── Page Header ── -->
+                <HBox class="earmmsPageHeader mb1" alignItems="Center">
+                    <VBox class="earmmsPageHeaderLeft">
+                        <Title text="Repair Requests" level="H3"/>
+                        <Label text="Manage and assign all repair tickets across the enterprise"/>
+                    </VBox>
+                    <ToolbarSpacer/>
+                    <Label text="Total:" class="textSmall mr05"/>
+                    <Label text="{= ${/repairRequests}.length }" class="textBold mr1"/>
+                </HBox>
+
+                <!-- ── Filter Bar ── -->
+                <HBox class="earmmsFilterBar mb1" alignItems="Center" wrap="Wrap">
+                    <SearchField
+                        id="rrSearchField"
+                        placeholder="Search by RR#, asset, employee, or category…"
+                        width="22rem"
+                        search=".onSearch"
+                        liveChange=".onSearch"
+                        class="mr1"/>
+
+                    <Label text="Status:" class="mr05"/>
+                    <Select id="statusFilter" change=".onFilterChange" class="mr1">
+                        <core:Item key="" text="All Status"/>
+                        <core:Item key="Open" text="Open"/>
+                        <core:Item key="Assigned" text="Assigned"/>
+                        <core:Item key="InProgress" text="In Progress"/>
+                        <core:Item key="Resolved" text="Resolved"/>
+                        <core:Item key="Closed" text="Closed"/>
+                    </Select>
+
+                    <Label text="Severity:" class="mr05"/>
+                    <Select id="severityFilter" change=".onFilterChange" class="mr1">
+                        <core:Item key="" text="All Severities"/>
+                        <core:Item key="High" text="High"/>
+                        <core:Item key="Medium" text="Medium"/>
+                        <core:Item key="Low" text="Low"/>
+                    </Select>
+
+                    <Label text="SLA:" class="mr05"/>
+                    <Select id="slaFilter" change=".onFilterChange">
+                        <core:Item key="" text="All SLA"/>
+                        <core:Item key="Breached" text="Breached"/>
+                        <core:Item key="AtRisk" text="At Risk"/>
+                        <core:Item key="OnTrack" text="On Track"/>
+                    </Select>
+
+                    <ToolbarSpacer/>
+                    <Button text="Clear Filters" type="Transparent" press=".onClearFilters" icon="sap-icon://clear-filter"/>
+                </HBox>
+
+                <!-- ── Main Table ── -->
+                <Table
+                    id="rrTable"
+                    items="{/repairRequests}"
+                    class="earmmsTable w100"
+                    showSeparators="Inner"
+                    growing="true"
+                    growingThreshold="10"
+                    noDataText="No repair requests found">
+
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="Repair Requests" level="H4"/>
+                            <ToolbarSpacer/>
+                            <Label id="rrCountLabel" text=""/>
+                        </Toolbar>
+                    </headerToolbar>
+
+                    <columns>
+                        <Column width="9.5rem"><header><Label text="RR Number" class="textBold textSmall"/></header></Column>
+                        <Column><header><Label text="Asset" class="textBold textSmall"/></header></Column>
+                        <Column width="9rem"><header><Label text="Employee" class="textBold textSmall"/></header></Column>
+                        <Column width="7rem"><header><Label text="Category" class="textBold textSmall"/></header></Column>
+                        <Column width="5.5rem"><header><Label text="Severity" class="textBold textSmall"/></header></Column>
+                        <Column width="7rem"><header><Label text="Status" class="textBold textSmall"/></header></Column>
+                        <Column width="5.5rem"><header><Label text="SLA" class="textBold textSmall"/></header></Column>
+                        <Column><header><Label text="Assigned To" class="textBold textSmall"/></header></Column>
+                        <Column width="6.5rem"><header><Label text="Raised On" class="textBold textSmall"/></header></Column>
+                        <Column width="7rem" hAlign="Center"><header><Label text="Actions" class="textBold textSmall"/></header></Column>
+                    </columns>
+
+                    <items>
+                        <ColumnListItem type="Active" press=".onRRRowPress">
+                            <cells>
+                                <Label text="{requestNumber}" class="textBold textInfo"/>
+
+                                <VBox>
+                                    <Label text="{assetTag}" class="textBold textSmall"/>
+                                    <Label text="{assetType} · {assetMake}" class="textSmall textMuted"/>
+                                </VBox>
+
+                                <VBox>
+                                    <Label text="{employeeName}" class="textSmall textBold"/>
+                                    <Label text="{department}" class="textSmall textMuted"/>
+                                </VBox>
+
+                                <Label text="{issueCategory}" class="textSmall"/>
+
+                                <ObjectStatus
+                                    text="{severity}"
+                                    state="{path: 'severity', formatter: '.formatter.severityToState'}"/>
+
+                                <ObjectStatus
+                                    text="{status}"
+                                    state="{path: 'status', formatter: '.formatter.rrStatusToState'}"/>
+
+                                <ObjectStatus
+                                    text="{slaStatus}"
+                                    state="{path: 'slaStatus', formatter: '.formatter.slaToState'}"/>
+
+                                <Label text="{path: 'technicianName', formatter: '.formatter.notAssigned'}" class="textSmall"/>
+
+                                <Label text="{path: 'raisedOn', formatter: '.formatter.formatDate'}" class="textSmall textMuted"/>
+
+                                <HBox justifyContent="Center">
+                                    <Button
+                                        text="Assign"
+                                        type="Emphasized"
+                                        icon="sap-icon://employee"
+                                        press=".onAssignTechnician"
+                                        visible="{= ${status} === 'Open' }"
+                                        class="textSmall"/>
+                                    <Button
+                                        text="Details"
+                                        type="Transparent"
+                                        icon="sap-icon://detail-view"
+                                        press=".onRRRowPress"
+                                        visible="{= ${status} !== 'Open' }"
+                                        class="textSmall"/>
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

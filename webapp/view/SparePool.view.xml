@@ -1,0 +1,113 @@
+<mvc:View
+    controllerName="com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.SparePool"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page showHeader="false" class="earmmsContentPage" enableScrolling="true">
+        <content>
+            <VBox class="earmmsPageContent">
+
+                <!-- ── Page Header ── -->
+                <HBox class="earmmsPageHeader mb1" alignItems="Center">
+                    <VBox class="earmmsPageHeaderLeft">
+                        <Title text="Spare Pool Management" level="H3"/>
+                        <Label text="View and manage spare asset inventory for mitigation allocation"/>
+                    </VBox>
+                    <ToolbarSpacer/>
+                    <Label text="Total Spares:" class="textSmall mr05"/>
+                    <Label text="{= ${/sparePool}.length }" class="textBold"/>
+                </HBox>
+
+                <!-- ── Status Summary Tiles ── -->
+                <HBox class="mb1" wrap="Wrap" justifyContent="Start">
+                    <VBox class="spareStatusTile statusAvailable mr1">
+                        <Title text="{/kpis/availableSpares}" level="H1" class="spareStatNumber textSuccess"/>
+                        <Label text="Available" class="spareStatLabel textSuccess"/>
+                        <Label text="Ready for Allocation" class="textSmall textMuted mt025"/>
+                    </VBox>
+                    <VBox class="spareStatusTile statusReserved mr1">
+                        <Title text="{path: '/sparePool', formatter: '.formatter.countSpareReserved'}" level="H1" class="spareStatNumber textWarning"/>
+                        <Label text="Reserved" class="spareStatLabel textWarning"/>
+                        <Label text="Pending Issue" class="textSmall textMuted mt025"/>
+                    </VBox>
+                    <VBox class="spareStatusTile statusInUse">
+                        <Title text="{path: '/sparePool', formatter: '.formatter.countSpareInUse'}" level="H1" class="spareStatNumber textError"/>
+                        <Label text="In Use" class="spareStatLabel textError"/>
+                        <Label text="Issued to Employee" class="textSmall textMuted mt025"/>
+                    </VBox>
+                </HBox>
+
+                <!-- ── Spare Pool Table ── -->
+                <VBox class="earmmsCard">
+                    <HBox class="earmmsCardHeader" alignItems="Center">
+                        <core:Icon src="sap-icon://inventory" color="#0070f2" size="1rem" class="mr05"/>
+                        <Label text="Spare Asset Inventory" class="textBold"/>
+                        <ToolbarSpacer/>
+                        <SearchField
+                            id="spareSearch"
+                            placeholder="Search spare assets…"
+                            width="16rem"
+                            search=".onSpareSearch"
+                            liveChange=".onSpareSearch"/>
+                    </HBox>
+
+                    <Table
+                        id="spareTable"
+                        items="{/sparePool}"
+                        class="earmmsTable w100"
+                        showSeparators="Inner"
+                        noDataText="No spare assets found">
+                        <columns>
+                            <Column width="9rem"><header><Label text="Asset Tag" class="textBold textSmall"/></header></Column>
+                            <Column width="6rem"><header><Label text="Type" class="textBold textSmall"/></header></Column>
+                            <Column><header><Label text="Make / Model" class="textBold textSmall"/></header></Column>
+                            <Column width="8rem"><header><Label text="Serial Number" class="textBold textSmall"/></header></Column>
+                            <Column width="8rem"><header><Label text="Availability" class="textBold textSmall"/></header></Column>
+                            <Column><header><Label text="Mitigation / Employee" class="textBold textSmall"/></header></Column>
+                            <Column width="8rem" hAlign="Center"><header><Label text="Actions" class="textBold textSmall"/></header></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem type="Inactive">
+                                <cells>
+                                    <Label text="{assetTag}" class="textBold"/>
+                                    <Label text="{typeName}"/>
+                                    <Label text="{make} {model}"/>
+                                    <Label text="{serialNumber}" class="textSmall textMuted"/>
+                                    <ObjectStatus
+                                        text="{availabilityStatus}"
+                                        state="{path: 'availabilityStatus', formatter: '.formatter.spareStatusToState'}"/>
+                                    <VBox>
+                                        <Label text="{path: 'mitigationNumber', formatter: '.formatter.nullDash'}" class="textSmall textBold"/>
+                                        <Label text="{path: 'employeeName', formatter: '.formatter.nullDash'}" class="textSmall textMuted"/>
+                                    </VBox>
+                                    <HBox justifyContent="Center">
+                                        <Button
+                                            text="Mark Returned"
+                                            type="Transparent"
+                                            icon="sap-icon://sys-back"
+                                            press=".onMarkSpareReturned"
+                                            visible="{= ${availabilityStatus} === 'InUse' }"
+                                            class="textSmall"/>
+                                        <Button
+                                            text="Release"
+                                            type="Transparent"
+                                            icon="sap-icon://unlocked"
+                                            press=".onReleaseReservation"
+                                            visible="{= ${availabilityStatus} === 'Reserved' }"
+                                            class="textSmall"/>
+                                        <Label
+                                            text="Available"
+                                            class="textSuccess textSmall"
+                                            visible="{= ${availabilityStatus} === 'Available' }"/>
+                                    </HBox>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </VBox>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

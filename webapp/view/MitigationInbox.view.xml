@@ -1,0 +1,213 @@
+<mvc:View
+    controllerName="com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.MitigationInbox"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page showHeader="false" class="earmmsContentPage" enableScrolling="true">
+        <content>
+            <VBox class="earmmsPageContent">
+
+                <!-- ── Page Header ── -->
+                <HBox class="earmmsPageHeader mb1" alignItems="Center">
+                    <VBox class="earmmsPageHeaderLeft">
+                        <Title text="Mitigation Inbox" level="H3"/>
+                        <Label text="Review and process mitigation requests from employees"/>
+                    </VBox>
+                    <ToolbarSpacer/>
+                    <HBox alignItems="Center" class="mr05">
+                        <core:Icon src="sap-icon://pending" color="#df6e0c" size="1rem" class="mr05"/>
+                        <Label text="Pending:" class="textSmall mr05"/>
+                        <Label text="{/kpis/pendingApprovals}" class="textBold textWarning mr1"/>
+                        <core:Icon src="sap-icon://process" color="#0070f2" size="1rem" class="mr05"/>
+                        <Label text="Active:" class="textSmall mr05"/>
+                        <Label text="{/kpis/activeMitigations}" class="textBold textInfo"/>
+                    </HBox>
+                </HBox>
+
+                <!-- ── Tab Bar ── -->
+                <IconTabBar
+                    id="mrTabBar"
+                    expanded="true"
+                    class="w100"
+                    backgroundDesign="Transparent"
+                    tabDensityMode="Compact">
+
+                    <!-- PENDING TAB -->
+                    <items>
+                        <IconTabFilter
+                            key="pending"
+                            text="Pending Approvals"
+                            count="{/kpis/pendingApprovals}"
+                            icon="sap-icon://pending"
+                            design="Transparent">
+                            <content>
+                                <VBox id="pendingListContainer" class="mt1">
+                                    <List
+                                        id="pendingMRList"
+                                        items="{path: '/mitigationRequests', filters: [{path:'approvalStatus', operator:'EQ', value1:'Pending'}]}"
+                                        noDataText="No pending approvals. All requests have been processed."
+                                        showSeparators="None">
+                                        <items>
+                                            <CustomListItem type="Inactive">
+                                                <content>
+                                                    <VBox class="mrPendingCard">
+                                                        <!-- Card Header -->
+                                                        <HBox class="mb05" alignItems="Center">
+                                                            <Label text="{mitigationNumber}" class="textBold textInfo mr1"/>
+                                                            <ObjectStatus
+                                                                text="{businessImpact}"
+                                                                state="{path: 'businessImpact', formatter: '.formatter.impactToState'}"
+                                                                class="mr1"/>
+                                                            <Label text="Linked:" class="textSmall textMuted mr05"/>
+                                                            <Label text="{linkedRepairNumber}" class="textSmall textBold"/>
+                                                            <ToolbarSpacer/>
+                                                            <Label text="{path: 'raisedOn', formatter: '.formatter.formatDateTime'}" class="textSmall textMuted"/>
+                                                        </HBox>
+
+                                                        <!-- Employee Info -->
+                                                        <HBox class="mb05" alignItems="Center">
+                                                            <core:Icon src="sap-icon://employee" size="0.875rem" color="#6b7280" class="mr05"/>
+                                                            <Label text="{employeeName}" class="textBold textSmall mr05"/>
+                                                            <Label text="·" class="textSmall textMuted mr05"/>
+                                                            <Label text="{department}" class="textSmall textMuted mr1"/>
+                                                            <core:Icon src="sap-icon://laptop" size="0.875rem" color="#6b7280" class="mr05"/>
+                                                            <Label text="{assetTag}" class="textSmall textBold"/>
+                                                            <Label text=" ({assetType})" class="textSmall textMuted"/>
+                                                        </HBox>
+
+                                                        <!-- Urgency Reason -->
+                                                        <VBox class="mb1">
+                                                            <Label text="Urgency Reason:" class="textSmall textBold mb025"/>
+                                                            <Text text="{urgencyReason}" maxLines="3" class="textSmall"/>
+                                                        </VBox>
+
+                                                        <!-- Action Buttons -->
+                                                        <HBox justifyContent="End">
+                                                            <Button
+                                                                text="View Details"
+                                                                type="Transparent"
+                                                                icon="sap-icon://detail-view"
+                                                                press=".onViewMRDetail"
+                                                                class="mr05"/>
+                                                            <Button
+                                                                text="Reject"
+                                                                type="Reject"
+                                                                icon="sap-icon://decline"
+                                                                press=".onRejectMR"
+                                                                class="mr05"/>
+                                                            <Button
+                                                                text="Approve &amp; Allocate Spare"
+                                                                type="Accept"
+                                                                icon="sap-icon://accept"
+                                                                press=".onApproveMR"/>
+                                                        </HBox>
+                                                    </VBox>
+                                                </content>
+                                            </CustomListItem>
+                                        </items>
+                                    </List>
+                                </VBox>
+                            </content>
+                        </IconTabFilter>
+
+                        <!-- ALL REQUESTS TAB -->
+                        <IconTabFilter
+                            key="all"
+                            text="All Mitigation Requests"
+                            icon="sap-icon://list"
+                            design="Transparent">
+                            <content>
+                                <VBox class="mt1">
+                                    <!-- Filter -->
+                                    <HBox class="earmmsFilterBar mb1" alignItems="Center" wrap="Wrap">
+                                        <SearchField
+                                            id="mrSearchField"
+                                            placeholder="Search by MR#, employee, or asset…"
+                                            width="20rem"
+                                            search=".onMRSearch"
+                                            liveChange=".onMRSearch"
+                                            class="mr1"/>
+                                        <Label text="Status:" class="mr05"/>
+                                        <Select id="mrStatusFilter" change=".onMRFilterChange" class="mr1">
+                                            <core:Item key="" text="All Status"/>
+                                            <core:Item key="Requested" text="Requested"/>
+                                            <core:Item key="Approved" text="Approved"/>
+                                            <core:Item key="Issued" text="Issued"/>
+                                            <core:Item key="Returned" text="Returned"/>
+                                            <core:Item key="Closed" text="Closed"/>
+                                        </Select>
+                                        <Label text="Impact:" class="mr05"/>
+                                        <Select id="mrImpactFilter" change=".onMRFilterChange">
+                                            <core:Item key="" text="All Impact"/>
+                                            <core:Item key="Critical" text="Critical"/>
+                                            <core:Item key="High" text="High"/>
+                                            <core:Item key="Medium" text="Medium"/>
+                                        </Select>
+                                        <ToolbarSpacer/>
+                                        <Button text="Clear" type="Transparent" press=".onClearMRFilters" icon="sap-icon://clear-filter"/>
+                                    </HBox>
+
+                                    <Table
+                                        id="allMRTable"
+                                        items="{/mitigationRequests}"
+                                        class="earmmsTable w100"
+                                        showSeparators="Inner"
+                                        noDataText="No mitigation requests found">
+                                        <columns>
+                                            <Column width="9.5rem"><header><Label text="MR Number" class="textBold textSmall"/></header></Column>
+                                            <Column width="9rem"><header><Label text="Employee" class="textBold textSmall"/></header></Column>
+                                            <Column width="8rem"><header><Label text="Asset" class="textBold textSmall"/></header></Column>
+                                            <Column width="6rem"><header><Label text="Impact" class="textBold textSmall"/></header></Column>
+                                            <Column width="7rem"><header><Label text="Approval" class="textBold textSmall"/></header></Column>
+                                            <Column width="7rem"><header><Label text="Status" class="textBold textSmall"/></header></Column>
+                                            <Column width="9rem"><header><Label text="Linked RR" class="textBold textSmall"/></header></Column>
+                                            <Column><header><Label text="Spare Issued" class="textBold textSmall"/></header></Column>
+                                            <Column width="7rem"><header><Label text="Return Due" class="textBold textSmall"/></header></Column>
+                                            <Column width="5.5rem" hAlign="Center"><header><Label text="Actions" class="textBold textSmall"/></header></Column>
+                                        </columns>
+                                        <items>
+                                            <ColumnListItem type="Active" press=".onMRRowPress">
+                                                <cells>
+                                                    <Label text="{mitigationNumber}" class="textBold textInfo"/>
+                                                    <VBox>
+                                                        <Label text="{employeeName}" class="textSmall textBold"/>
+                                                        <Label text="{department}" class="textSmall textMuted"/>
+                                                    </VBox>
+                                                    <VBox>
+                                                        <Label text="{assetTag}" class="textSmall textBold"/>
+                                                        <Label text="{assetType}" class="textSmall textMuted"/>
+                                                    </VBox>
+                                                    <ObjectStatus
+                                                        text="{businessImpact}"
+                                                        state="{path: 'businessImpact', formatter: '.formatter.impactToState'}"/>
+                                                    <ObjectStatus
+                                                        text="{approvalStatus}"
+                                                        state="{path: 'approvalStatus', formatter: '.formatter.approvalStatusToState'}"/>
+                                                    <ObjectStatus
+                                                        text="{status}"
+                                                        state="{path: 'status', formatter: '.formatter.mrStatusToState'}"/>
+                                                    <Label text="{linkedRepairNumber}" class="textSmall textBold"/>
+                                                    <Label text="{path: 'spareAssetTag', formatter: '.formatter.nullDash'}"/>
+                                                    <Label text="{path: 'returnDueDate', formatter: '.formatter.formatDate'}" class="textSmall"/>
+                                                    <Button
+                                                        text="Mark Returned"
+                                                        type="Transparent"
+                                                        icon="sap-icon://sys-back"
+                                                        press=".onMarkReturned"
+                                                        visible="{= ${status} === 'Issued' }"
+                                                        class="textSmall"/>
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </VBox>
+                            </content>
+                        </IconTabFilter>
+                    </items>
+                </IconTabBar>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

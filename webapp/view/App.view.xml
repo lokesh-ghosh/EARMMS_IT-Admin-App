@@ -1,7 +1,98 @@
-<mvc:View controllerName="com.wipro.earmms.technician.app.earmmstechnicianapp.controller.App"
+<mvc:View
+    controllerName="com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.App"
     displayBlock="true"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-    <App id="app">
-    </App>
+    xmlns="sap.m"
+    xmlns:tnt="sap.tnt"
+    xmlns:core="sap.ui.core">
+
+    <tnt:ToolPage id="toolPage" sideExpanded="true">
+
+        <!-- ═══════════════════ HEADER ═══════════════════ -->
+        <tnt:header>
+            <tnt:ToolHeader class="earmmsToolHeader">
+                <Button
+                    id="navToggleBtn"
+                    icon="sap-icon://menu2"
+                    type="Transparent"
+                    tooltip="Toggle Navigation"
+                    press=".onToggleNav"/>
+
+                <HBox alignItems="Center" class="ml05">
+                    <core:Icon src="sap-icon://it-system" size="1.25rem" color="#fff" class="mr05"/>
+                    <VBox justifyContent="Center">
+                        <Title text="EARMMS" level="H5" class="earmmsHeaderTitle"/>
+                        <Label text="IT Admin Console" class="earmmsHeaderSub"/>
+                    </VBox>
+                </HBox>
+
+                <ToolbarSpacer/>
+
+                <Button
+                    icon="sap-icon://refresh"
+                    type="Transparent"
+                    tooltip="Refresh Data"
+                    press=".onRefresh"/>
+
+                <HBox alignItems="Center" class="mr05">
+                    <Avatar
+                        initials="IA"
+                        displayShape="Circle"
+                        size="XS"
+                        backgroundColor="Accent6"
+                        tooltip="IT Admin"/>
+                    <Label text="IT Admin" class="earmmsHeaderSub ml05"/>
+                </HBox>
+            </tnt:ToolHeader>
+        </tnt:header>
+
+        <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+        <tnt:sideContent>
+            <tnt:SideNavigation id="sideNav" itemSelect=".onNavItemSelect">
+                <tnt:item>
+                    <tnt:NavigationList id="mainNavList">
+                        <tnt:NavigationListItem
+                            key="dashboard"
+                            icon="sap-icon://home"
+                            text="Dashboard"
+                            selected="true"/>
+                        <tnt:NavigationListItem
+                            key="repairRequests"
+                            icon="sap-icon://wrench"
+                            text="Repair Requests"/>
+                        <tnt:NavigationListItem
+                            key="mitigationInbox"
+                            icon="sap-icon://pending"
+                            text="Mitigation Inbox"/>
+                        <tnt:NavigationListItem
+                            key="sparePool"
+                            icon="sap-icon://inventory"
+                            text="Spare Pool"/>
+                        <tnt:NavigationListItem
+                            key="assets"
+                            icon="sap-icon://laptop"
+                            text="Assets"/>
+                        <tnt:NavigationListItem
+                            key="technicians"
+                            icon="sap-icon://employee"
+                            text="Technicians"/>
+                    </tnt:NavigationList>
+                </tnt:item>
+                <tnt:fixedItem>
+                    <tnt:NavigationList>
+                        <tnt:NavigationListItem
+                            key="about"
+                            icon="sap-icon://information"
+                            text="About EARMMS"/>
+                    </tnt:NavigationList>
+                </tnt:fixedItem>
+            </tnt:SideNavigation>
+        </tnt:sideContent>
+
+        <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+        <tnt:mainContents>
+            <VBox id="contentContainer" width="100%" height="100%" renderType="Bare"/>
+        </tnt:mainContents>
+
+    </tnt:ToolPage>
 </mvc:View>

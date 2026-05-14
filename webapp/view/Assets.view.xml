@@ -1,0 +1,116 @@
+<mvc:View
+    controllerName="com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.Assets"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page showHeader="false" class="earmmsContentPage" enableScrolling="true">
+        <content>
+            <VBox class="earmmsPageContent">
+
+                <!-- ── Page Header ── -->
+                <HBox class="earmmsPageHeader mb1" alignItems="Center">
+                    <VBox class="earmmsPageHeaderLeft">
+                        <Title text="Asset Management" level="H3"/>
+                        <Label text="View and manage all enterprise assets across the organization"/>
+                    </VBox>
+                    <ToolbarSpacer/>
+                    <Label text="Total Assets:" class="textSmall mr05"/>
+                    <Label text="{/kpis/totalAssets}" class="textBold"/>
+                </HBox>
+
+                <!-- ── Asset Status Summary ── -->
+                <HBox class="mb1" wrap="Wrap">
+                    <VBox class="earmmsCard mr1" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                        <Title text="{path: '/assets', formatter: '.formatter.countAssetsActive'}" level="H2" class="textSuccess"/>
+                        <Label text="Active" class="textSmall textMuted"/>
+                    </VBox>
+                    <VBox class="earmmsCard mr1" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                        <Title text="{path: '/assets', formatter: '.formatter.countAssetsUnderRepair'}" level="H2" class="textWarning"/>
+                        <Label text="Under Repair" class="textSmall textMuted"/>
+                    </VBox>
+                    <VBox class="earmmsCard mr1" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                        <Title text="{path: '/assets', formatter: '.formatter.countAssetsInMitigation'}" level="H2" class="textError"/>
+                        <Label text="In Mitigation" class="textSmall textMuted"/>
+                    </VBox>
+                    <VBox class="earmmsCard" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                        <Title text="{path: '/assets', formatter: '.formatter.countAssetsRetired'}" level="H2" class="textMuted"/>
+                        <Label text="Retired" class="textSmall textMuted"/>
+                    </VBox>
+                </HBox>
+
+                <!-- ── Filter Bar ── -->
+                <HBox class="earmmsFilterBar mb1" alignItems="Center" wrap="Wrap">
+                    <SearchField
+                        id="assetSearch"
+                        placeholder="Search by asset tag, make, model, or owner…"
+                        width="22rem"
+                        search=".onSearch"
+                        liveChange=".onSearch"
+                        class="mr1"/>
+                    <Label text="Type:" class="mr05"/>
+                    <Select id="typeFilter" change=".onFilterChange" class="mr1">
+                        <core:Item key="" text="All Types"/>
+                        <core:Item key="LAPTOP"   text="Laptop"/>
+                        <core:Item key="MONITOR"  text="Monitor"/>
+                        <core:Item key="KEYBOARD" text="Keyboard"/>
+                        <core:Item key="CHAIR"    text="Chair"/>
+                        <core:Item key="PHONE"    text="IP Phone"/>
+                    </Select>
+                    <Label text="Status:" class="mr05"/>
+                    <Select id="statusFilter" change=".onFilterChange" class="mr1">
+                        <core:Item key="" text="All Status"/>
+                        <core:Item key="Active"      text="Active"/>
+                        <core:Item key="UnderRepair" text="Under Repair"/>
+                        <core:Item key="InMitigation" text="In Mitigation"/>
+                        <core:Item key="Retired"     text="Retired"/>
+                    </Select>
+                    <ToolbarSpacer/>
+                    <Button text="Clear" type="Transparent" press=".onClearFilters" icon="sap-icon://clear-filter"/>
+                </HBox>
+
+                <!-- ── Asset Table ── -->
+                <Table
+                    id="assetTable"
+                    items="{/assets}"
+                    class="earmmsTable w100"
+                    showSeparators="Inner"
+                    growing="true"
+                    growingThreshold="10"
+                    noDataText="No assets found">
+                    <columns>
+                        <Column width="9rem"><header><Label text="Asset Tag" class="textBold textSmall"/></header></Column>
+                        <Column width="6rem"><header><Label text="Type" class="textBold textSmall"/></header></Column>
+                        <Column><header><Label text="Make / Model" class="textBold textSmall"/></header></Column>
+                        <Column width="9rem"><header><Label text="Serial Number" class="textBold textSmall"/></header></Column>
+                        <Column><header><Label text="Owner" class="textBold textSmall"/></header></Column>
+                        <Column><header><Label text="Location" class="textBold textSmall"/></header></Column>
+                        <Column width="7rem"><header><Label text="Status" class="textBold textSmall"/></header></Column>
+                        <Column width="7rem"><header><Label text="Warranty" class="textBold textSmall"/></header></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem type="Active" press=".onAssetPress">
+                            <cells>
+                                <Label text="{assetTag}" class="textBold textInfo"/>
+                                <Label text="{typeName}" class="textSmall"/>
+                                <VBox>
+                                    <Label text="{make} {model}" class="textSmall textBold"/>
+                                </VBox>
+                                <Label text="{serialNumber}" class="textSmall textMuted"/>
+                                <VBox>
+                                    <Label text="{ownerName}" class="textSmall textBold"/>
+                                </VBox>
+                                <Label text="{location}" class="textSmall textMuted"/>
+                                <ObjectStatus
+                                    text="{status}"
+                                    state="{path: 'status', formatter: '.formatter.assetStatusToState'}"/>
+                                <Label text="{path: 'warrantyExpiry', formatter: '.formatter.formatDate'}" class="textSmall"/>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

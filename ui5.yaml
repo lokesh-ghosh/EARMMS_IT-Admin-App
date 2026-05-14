@@ -2,7 +2,7 @@
 
 specVersion: "4.0"
 metadata:
-  name: com.wipro.earmms.technician.app.earmmstechnicianapp
+  name: com.wipro.earmms.itadmin.app.earmmsitadminapp
 type: application
 server:
   customMiddleware:
@@ -15,14 +15,8 @@ server:
             - /resources
             - /test-resources
           url: https://ui5.sap.com
-    - name: fiori-tools-appreload
-      afterMiddleware: compression
-      configuration:
-        port: 35729
-        path: webapp
-        delay: 300
     - name: fiori-tools-preview
-      afterMiddleware: fiori-tools-appreload
+      afterMiddleware: compression
       configuration:
         flp:
           theme: sap_horizon

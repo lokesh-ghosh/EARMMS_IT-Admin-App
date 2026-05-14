@@ -1,20 +1,21 @@
 sap.ui.define([
     "sap/ui/model/json/JSONModel",
-    "sap/ui/Device"
-], 
-function (JSONModel, Device) {
+    "sap/ui/Device",
+    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/mockData"
+], function (JSONModel, Device, MockData) {
     "use strict";
 
     return {
-        /**
-         * Provides runtime information for the device the UI5 app is running on as a JSONModel.
-         * @returns {sap.ui.model.json.JSONModel} The device model.
-         */
         createDeviceModel: function () {
             var oModel = new JSONModel(Device);
             oModel.setDefaultBindingMode("OneWay");
             return oModel;
+        },
+
+        createMockDataModel: function () {
+            var oModel = new JSONModel(MockData.getData());
+            oModel.setDefaultBindingMode("TwoWay");
+            return oModel;
         }
     };
-
 });

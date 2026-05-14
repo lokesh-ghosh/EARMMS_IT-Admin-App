@@ -1,0 +1,103 @@
+<mvc:View
+    controllerName="com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.Technicians"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page showHeader="false" class="earmmsContentPage" enableScrolling="true">
+        <content>
+            <VBox class="earmmsPageContent">
+
+                <!-- ── Page Header ── -->
+                <HBox class="earmmsPageHeader mb1" alignItems="Center">
+                    <VBox class="earmmsPageHeaderLeft">
+                        <Title text="Technician Management" level="H3"/>
+                        <Label text="Monitor workload, assignments, and performance of all technicians"/>
+                    </VBox>
+                    <ToolbarSpacer/>
+                    <Label text="Total Technicians:" class="textSmall mr05"/>
+                    <Label text="{= ${/technicians}.length }" class="textBold"/>
+                </HBox>
+
+                <!-- ── Workload Summary ── -->
+                <HBox class="mb1" wrap="Wrap">
+                    <VBox class="earmmsCard mr1" style="flex:1 1 150px; min-width:130px; text-align:center; width:auto;">
+                        <Title text="{path: '/technicians', formatter: '.formatter.sumTechLoad'}" level="H2" class="textInfo"/>
+                        <Label text="Total Active Tickets" class="textSmall textMuted"/>
+                    </VBox>
+                    <VBox class="earmmsCard mr1" style="flex:1 1 150px; min-width:130px; text-align:center; width:auto;">
+                        <Title text="{path: '/technicians', formatter: '.formatter.sumTechCapacity'}" level="H2" class="textSuccess"/>
+                        <Label text="Available Capacity" class="textSmall textMuted"/>
+                    </VBox>
+                    <VBox class="earmmsCard" style="flex:1 1 150px; min-width:130px; text-align:center; width:auto;">
+                        <Title text="{path: '/technicians', formatter: '.formatter.avgTechUtilization'}" level="H2" class="textWarning"/>
+                        <Label text="Avg. Utilization" class="textSmall textMuted"/>
+                    </VBox>
+                </HBox>
+
+                <!-- ── Technician Cards ── -->
+                <VBox>
+                    <List
+                        id="technicianList"
+                        items="{/technicians}"
+                        showSeparators="None"
+                        noDataText="No technicians found">
+                        <items>
+                            <CustomListItem type="Active" press=".onTechPress">
+                                <content>
+                                    <VBox class="earmmsCard">
+                                        <HBox alignItems="Center" class="mb1">
+                                            <!-- Avatar with initials -->
+                                            <Avatar
+                                                initials="{path: 'name', formatter: '.formatter.techInitials'}"
+                                                displayShape="Circle"
+                                                size="M"
+                                                backgroundColor="{path: 'name', formatter: '.formatter.techColor'}"
+                                                class="mr1"/>
+                                            <VBox>
+                                                <HBox alignItems="Center">
+                                                    <Title text="{name}" level="H4" class="mr1"/>
+                                                    <ObjectStatus
+                                                        text="{= ${currentLoad} >= ${maxLoad} ? 'Fully Loaded' : ${currentLoad} >= 3 ? 'High Load' : ${currentLoad} >= 1 ? 'Available' : 'Free' }"
+                                                        state="{parts:[{path:'currentLoad'},{path:'maxLoad'}], formatter:'.formatter.loadToState'}"/>
+                                                </HBox>
+                                                <HBox alignItems="Center" class="mt025">
+                                                    <core:Icon src="sap-icon://wrench" size="0.875rem" color="#6b7280" class="mr05"/>
+                                                    <Label text="{specialization} Specialist" class="textSmall textMuted mr1"/>
+                                                    <core:Icon src="sap-icon://email" size="0.875rem" color="#6b7280" class="mr05"/>
+                                                    <Label text="{email}" class="textSmall textMuted mr1"/>
+                                                    <core:Icon src="sap-icon://phone" size="0.875rem" color="#6b7280" class="mr05"/>
+                                                    <Label text="{phone}" class="textSmall textMuted"/>
+                                                </HBox>
+                                            </VBox>
+                                            <ToolbarSpacer/>
+                                            <VBox alignItems="End">
+                                                <Label text="Workload" class="textSmall textBold mb025"/>
+                                                <HBox alignItems="Center">
+                                                    <ProgressIndicator
+                                                        percentValue="{parts:[{path:'currentLoad'},{path:'maxLoad'}], formatter:'.formatter.loadToPercent'}"
+                                                        displayValue="{currentLoad}/{maxLoad} tickets"
+                                                        state="{parts:[{path:'currentLoad'},{path:'maxLoad'}], formatter:'.formatter.loadToState'}"
+                                                        width="160px"/>
+                                                </HBox>
+                                            </VBox>
+                                        </HBox>
+
+                                        <!-- Assigned Tickets for this technician -->
+                                        <VBox>
+                                            <Label text="Assigned Repair Tickets:" class="textSmall textBold mb05"/>
+                                            <Label
+                                                text="{parts: [{path: '/repairRequests'}, {path: 'technicianId'}], formatter: '.formatter.activeTicketsSummary'}"
+                                                class="textSmall textMuted"/>
+                                        </VBox>
+                                    </VBox>
+                                </content>
+                            </CustomListItem>
+                        </items>
+                    </List>
+                </VBox>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

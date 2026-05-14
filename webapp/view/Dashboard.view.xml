@@ -1,0 +1,253 @@
+<mvc:View
+    controllerName="com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.Dashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:layout="sap.ui.layout"
+    xmlns:core="sap.ui.core">
+
+    <Page showHeader="false" class="earmmsContentPage" enableScrolling="true">
+        <content>
+            <VBox class="earmmsPageContent">
+
+                <!-- ── Page Header ── -->
+                <HBox class="earmmsPageHeader mb1">
+                    <VBox class="earmmsPageHeaderLeft">
+                        <Title text="Dashboard" level="H3"/>
+                        <Label text="IT Administration Overview — Enterprise Asset &amp; Repair Management"/>
+                    </VBox>
+                    <ToolbarSpacer/>
+                    <HBox alignItems="Center" class="mr05">
+                        <core:Icon src="sap-icon://status-critical" color="#bb0000" size="1rem" class="mr05"/>
+                        <Label text="SLA Compliance:" class="textBold mr05"/>
+                        <Label text="{= ${/kpis/slaCompliance} + '%' }" class="{= ${/kpis/slaCompliance} >= 90 ? 'textSuccess textBold' : ${/kpis/slaCompliance} >= 70 ? 'textWarning textBold' : 'textError textBold' }"/>
+                    </HBox>
+                </HBox>
+
+                <!-- ── KPI Tiles ── -->
+                <HBox class="earmmsKpiRow mb1" wrap="Wrap">
+                    <GenericTile
+                        class="earmmsKpiTile kpiError"
+                        header="Open Tickets"
+                        subheader="Active Repair Requests"
+                        press=".onNavigateRR"
+                        tileSizeBehavior="Responsive">
+                        <tileContent>
+                            <TileContent>
+                                <content>
+                                    <NumericContent
+                                        value="{/kpis/openTickets}"
+                                        valueColor="#bb0000"
+                                        icon="sap-icon://wrench"
+                                        scale="tickets"
+                                        withMargin="false"/>
+                                </content>
+                            </TileContent>
+                        </tileContent>
+                    </GenericTile>
+
+                    <GenericTile
+                        class="earmmsKpiTile kpiWarning"
+                        header="Pending Approvals"
+                        subheader="Awaiting IT Admin Action"
+                        press=".onNavigateMR"
+                        tileSizeBehavior="Responsive">
+                        <tileContent>
+                            <TileContent>
+                                <content>
+                                    <NumericContent
+                                        value="{/kpis/pendingApprovals}"
+                                        valueColor="#df6e0c"
+                                        icon="sap-icon://pending"
+                                        withMargin="false"/>
+                                </content>
+                            </TileContent>
+                        </tileContent>
+                    </GenericTile>
+
+                    <GenericTile
+                        class="earmmsKpiTile kpiInfo"
+                        header="Active Mitigations"
+                        subheader="Replacement Assets Issued"
+                        press=".onNavigateMR"
+                        tileSizeBehavior="Responsive">
+                        <tileContent>
+                            <TileContent>
+                                <content>
+                                    <NumericContent
+                                        value="{/kpis/activeMitigations}"
+                                        valueColor="#0070f2"
+                                        icon="sap-icon://process"
+                                        withMargin="false"/>
+                                </content>
+                            </TileContent>
+                        </tileContent>
+                    </GenericTile>
+
+                    <GenericTile
+                        class="earmmsKpiTile kpiSuccess"
+                        header="Available Spares"
+                        subheader="Ready for Allocation"
+                        press=".onNavigateSpare"
+                        tileSizeBehavior="Responsive">
+                        <tileContent>
+                            <TileContent>
+                                <content>
+                                    <NumericContent
+                                        value="{/kpis/availableSpares}"
+                                        valueColor="#107e3e"
+                                        icon="sap-icon://inventory"
+                                        withMargin="false"/>
+                                </content>
+                            </TileContent>
+                        </tileContent>
+                    </GenericTile>
+                </HBox>
+
+                <!-- ── Two Column: Pending Approvals + SLA Overview ── -->
+                <HBox wrap="Wrap" class="mb1" justifyContent="SpaceBetween">
+
+                    <!-- Pending Approvals -->
+                    <VBox class="earmmsCard" style="flex:1 1 460px; min-width:300px; margin-right:1rem; width:auto;">
+                        <HBox class="earmmsCardHeader" alignItems="Center">
+                            <core:Icon src="sap-icon://pending" color="#df6e0c" size="1rem" class="mr05"/>
+                            <Label text="Pending Mitigation Approvals" class="textBold"/>
+                            <ToolbarSpacer/>
+                            <Button text="View All" type="Transparent" press=".onNavigateMR" class="textSmall"/>
+                        </HBox>
+
+                        <!-- Pending MR Item -->
+                        <VBox id="pendingMRContainer">
+                            <!-- Filled by controller -->
+                        </VBox>
+
+                        <!-- List of pending items via binding -->
+                        <List
+                            id="pendingApprovalList"
+                            items="{path: '/mitigationRequests', filters: [{path: 'approvalStatus', operator: 'EQ', value1: 'Pending'}]}"
+                            noDataText="No pending approvals — great job!"
+                            showSeparators="None">
+                            <items>
+                                <CustomListItem
+                                    type="Active"
+                                    press=".onPendingMRPress">
+                                    <content>
+                                        <VBox class="quickListItem">
+                                            <HBox alignItems="Center" class="mb025">
+                                                <ObjectStatus
+                                                    text="{businessImpact}"
+                                                    state="{path: 'businessImpact', formatter: '.formatter.impactToState'}"/>
+                                                <Label text="{mitigationNumber}" class="textBold ml05"/>
+                                                <ToolbarSpacer/>
+                                                <Label text="{path: 'raisedOn', formatter: '.formatter.formatDate'}" class="textSmall textMuted"/>
+                                            </HBox>
+                                            <HBox alignItems="Center" class="mb025">
+                                                <core:Icon src="sap-icon://employee" size="0.875rem" color="#6b7280" class="mr05"/>
+                                                <Label text="{employeeName}" class="textSmall"/>
+                                                <Label text=" · " class="textSmall textMuted"/>
+                                                <Label text="{department}" class="textSmall textMuted"/>
+                                                <Label text="  |  Asset: " class="textSmall textMuted ml05"/>
+                                                <Label text="{assetTag}" class="textSmall textBold"/>
+                                            </HBox>
+                                            <Text text="{urgencyReason}" maxLines="2" class="textSmall textMuted"/>
+                                        </VBox>
+                                    </content>
+                                </CustomListItem>
+                            </items>
+                        </List>
+                    </VBox>
+
+                    <!-- SLA Status Overview -->
+                    <VBox class="earmmsCard" style="flex:1 1 360px; min-width:260px; width:auto;">
+                        <HBox class="earmmsCardHeader" alignItems="Center">
+                            <core:Icon src="sap-icon://status-critical" color="#bb0000" size="1rem" class="mr05"/>
+                            <Label text="SLA Status Overview" class="textBold"/>
+                        </HBox>
+
+                        <HBox justifyContent="SpaceBetween" class="mb1">
+                            <VBox alignItems="Center">
+                                <Title text="{/kpis/openTickets}" level="H2" class="textInfo"/>
+                                <Label text="Total Active" class="textSmall textMuted"/>
+                            </VBox>
+                            <VBox alignItems="Center">
+                                <Title text="{= ${/kpis/openTickets} - ${/kpis/breachedCount} - ${/kpis/atRiskCount} }" level="H2" class="textSuccess"/>
+                                <Label text="On Track" class="textSmall textMuted"/>
+                            </VBox>
+                            <VBox alignItems="Center">
+                                <Title text="{/kpis/atRiskCount}" level="H2" class="textWarning"/>
+                                <Label text="At Risk" class="textSmall textMuted"/>
+                            </VBox>
+                            <VBox alignItems="Center">
+                                <Title text="{/kpis/breachedCount}" level="H2" class="textError"/>
+                                <Label text="Breached" class="textSmall textMuted"/>
+                            </VBox>
+                        </HBox>
+
+                        <Label text="SLA Compliance Rate" class="textSmall textBold mb025"/>
+                        <ProgressIndicator
+                            percentValue="{/kpis/slaCompliance}"
+                            displayValue="{/kpis/slaCompliance}%"
+                            state="{= ${/kpis/slaCompliance} >= 90 ? 'Success' : ${/kpis/slaCompliance} >= 70 ? 'Warning' : 'Error' }"
+                            class="mb05"/>
+
+                        <Label text="Average MTTR" class="textSmall textBold mb025 mt05"/>
+                        <HBox alignItems="Center">
+                            <core:Icon src="sap-icon://time-overtime" color="#0070f2" class="mr05"/>
+                            <Title text="{/kpis/mttr}" level="H3" class="textInfo"/>
+                            <Label text=" hours" class="textSmall textMuted ml05"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <!-- ── Recent Repair Requests ── -->
+                <VBox class="earmmsCard">
+                    <HBox class="earmmsCardHeader" alignItems="Center">
+                        <core:Icon src="sap-icon://wrench" color="#0070f2" size="1rem" class="mr05"/>
+                        <Label text="Recent Repair Requests" class="textBold"/>
+                        <ToolbarSpacer/>
+                        <Button text="View All Requests" type="Transparent" press=".onNavigateRR"/>
+                    </HBox>
+
+                    <Table
+                        id="recentRRTable"
+                        items="{path: '/repairRequests', length: 5}"
+                        class="earmmsTable"
+                        showSeparators="Inner"
+                        alternateRowColors="false">
+                        <columns>
+                            <Column width="9rem"><header><Label text="RR Number" class="textBold textSmall"/></header></Column>
+                            <Column><header><Label text="Asset" class="textBold textSmall"/></header></Column>
+                            <Column width="8rem"><header><Label text="Employee" class="textBold textSmall"/></header></Column>
+                            <Column width="6rem"><header><Label text="Severity" class="textBold textSmall"/></header></Column>
+                            <Column width="7rem"><header><Label text="Status" class="textBold textSmall"/></header></Column>
+                            <Column width="6rem"><header><Label text="SLA" class="textBold textSmall"/></header></Column>
+                            <Column width="9rem"><header><Label text="Assigned To" class="textBold textSmall"/></header></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem type="Active" press=".onRRPress">
+                                <cells>
+                                    <Label text="{requestNumber}" class="textBold textInfo"/>
+                                    <VBox>
+                                        <Label text="{assetTag}" class="textBold textSmall"/>
+                                        <Label text="{assetType}" class="textSmall textMuted"/>
+                                    </VBox>
+                                    <Label text="{employeeName}"/>
+                                    <ObjectStatus
+                                        text="{severity}"
+                                        state="{path: 'severity', formatter: '.formatter.severityToState'}"/>
+                                    <ObjectStatus
+                                        text="{status}"
+                                        state="{path: 'status', formatter: '.formatter.rrStatusToState'}"/>
+                                    <ObjectStatus
+                                        text="{slaStatus}"
+                                        state="{path: 'slaStatus', formatter: '.formatter.slaToState'}"/>
+                                    <Label text="{path: 'technicianName', formatter: '.formatter.notAssigned'}" class="textSmall"/>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </VBox>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

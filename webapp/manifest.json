@@ -1,11 +1,11 @@
 {
   "_version": "1.84.0",
   "sap.app": {
-    "id": "com.wipro.earmms.technician.app.earmmstechnicianapp",
+    "id": "com.wipro.earmms.itadmin.app.earmmsitadminapp",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
-      "version": "0.0.1"
+      "version": "1.0.0"
     },
     "title": "{{appTitle}}",
     "description": "{{appDescription}}",
@@ -33,12 +33,16 @@
     }
   },
   "sap.ui5": {
-    "flexEnabled": true,
+    "flexEnabled": false,
     "dependencies": {
-      "minUI5Version": "1.147.2",
+      "minUI5Version": "1.120.0",
       "libs": {
         "sap.m": {},
-        "sap.ui.core": {}
+        "sap.ui.core": {},
+        "sap.tnt": {},
+        "sap.f": {},
+        "sap.ui.layout": {},
+        "sap.ui.unified": {}
       }
     },
     "contentDensities": {
@@ -49,7 +53,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "com.wipro.earmms.technician.app.earmmstechnicianapp.i18n.i18n"
+          "bundleName": "com.wipro.earmms.itadmin.app.earmmsitadminapp.i18n.i18n"
         }
       }
     },
@@ -60,36 +64,8 @@
         }
       ]
     },
-    "routing": {
-      "config": {
-        "routerClass": "sap.m.routing.Router",
-        "controlAggregation": "pages",
-        "controlId": "app",
-        "transition": "slide",
-        "type": "View",
-        "viewType": "XML",
-        "path": "com.wipro.earmms.technician.app.earmmstechnicianapp.view",
-        "async": true,
-        "viewPath": "com.wipro.earmms.technician.app.earmmstechnicianapp.view"
-      },
-      "routes": [
-        {
-          "name": "RouteView1",
-          "pattern": ":?query:",
-          "target": [
-            "TargetView1"
-          ]
-        }
-      ],
-      "targets": {
-        "TargetView1": {
-          "id": "View1",
-          "name": "View1"
-        }
-      }
-    },
     "rootView": {
-      "viewName": "com.wipro.earmms.technician.app.earmmstechnicianapp.view.App",
+      "viewName": "com.wipro.earmms.itadmin.app.earmmsitadminapp.view.App",
       "type": "XML",
       "id": "App",
       "async": true

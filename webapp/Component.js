@@ -1,10 +1,11 @@
 sap.ui.define([
     "sap/ui/core/UIComponent",
-    "com/wipro/earmms/technician/app/earmmstechnicianapp/model/models"
-], (UIComponent, models) => {
+    "sap/ui/Device",
+    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/models"
+], function (UIComponent, Device, models) {
     "use strict";
 
-    return UIComponent.extend("com.wipro.earmms.technician.app.earmmstechnicianapp.Component", {
+    return UIComponent.extend("com.wipro.earmms.itadmin.app.earmmsitadminapp.Component", {
         metadata: {
             manifest: "json",
             interfaces: [
@@ -12,15 +13,10 @@ sap.ui.define([
             ]
         },
 
-        init() {
-            // call the base component's init function
+        init: function () {
             UIComponent.prototype.init.apply(this, arguments);
-
-            // set the device model
             this.setModel(models.createDeviceModel(), "device");
-
-            // enable routing
-            this.getRouter().initialize();
+            this.setModel(models.createMockDataModel());
         }
     });
 });
