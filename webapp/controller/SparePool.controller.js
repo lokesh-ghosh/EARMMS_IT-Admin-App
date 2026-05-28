@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
-    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/formatter"
-], function (Controller, Filter, FilterOperator, MessageToast, MessageBox, formatter) {
+    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/formatter",
+    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/dataService"
+], function (Controller, Filter, FilterOperator, MessageToast, MessageBox, formatter, dataService) {
     "use strict";
 
     return Controller.extend("com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.SparePool", {
@@ -44,8 +45,8 @@ sap.ui.define([
                         if (sAction !== MessageBox.Action.OK) { return; }
                         var oModel = that.getOwnerComponent().getModel();
                         var oData  = oModel.getData();
+                        var sNow   = new Date().toISOString();
 
-                        // Update spare
                         var oS = oData.sparePool.find(function (s) { return s.poolId === oSpare.poolId; });
                         if (oS) {
                             oS.availabilityStatus = "Available";
@@ -54,18 +55,39 @@ sap.ui.define([
                             oS.employeeName       = null;
                         }
 
-                        // Update linked MR
                         var oMR = oData.mitigationRequests.find(function (m) { return m.sparePoolId === oSpare.poolId && m.status === "Issued"; });
                         if (oMR) {
-                            oMR.returnedOn = new Date().toISOString();
+                            oMR.returnedOn = sNow;
                             oMR.status     = "Returned";
                         }
 
-                        oData.kpis.activeMitigations = oData.mitigationRequests.filter(function (m) { return m.status === "Issued"; }).length;
-                        oData.kpis.availableSpares   = oData.sparePool.filter(function (s) { return s.availabilityStatus === "Available"; }).length;
-
+                        oData.kpis = dataService.computeKpis(oData);
                         oModel.refresh(true);
                         MessageToast.show(oSpare.assetTag + " is now available in the spare pool.");
+
+                        if (oMR) {
+                            dataService.patchProcessReturn(
+                                oMR.mitigationId,
+                                { returnedOn: sNow, status: "Returned" },
+                                oSpare.poolId,
+                                { availabilityStatus: "Available", mitigationId: null, mitigationNumber: null, employeeName: null }
+                            ).catch(function (oErr) {
+                                MessageBox.warning(
+                                    "Return saved locally but could not be persisted.\n\nError: " + (oErr.message || oErr),
+                                    { title: "OData Write Failed" }
+                                );
+                            });
+                        } else {
+                            dataService.patchReleaseReservation(oSpare.poolId, {
+                                availabilityStatus: "Available",
+                                mitigationId: null, mitigationNumber: null, employeeName: null
+                            }).catch(function (oErr) {
+                                MessageBox.warning(
+                                    "Return saved locally but could not be persisted.\n\nError: " + (oErr.message || oErr),
+                                    { title: "OData Write Failed" }
+                                );
+                            });
+                        }
                     }
                 }
             );
@@ -91,9 +113,19 @@ sap.ui.define([
                             oS.mitigationNumber   = null;
                             oS.employeeName       = null;
                         }
-                        oData.kpis.availableSpares = oData.sparePool.filter(function (s) { return s.availabilityStatus === "Available"; }).length;
+                        oData.kpis = dataService.computeKpis(oData);
                         oModel.refresh(true);
                         MessageToast.show("Reservation released. " + oSpare.assetTag + " is now available.");
+
+                        dataService.patchReleaseReservation(oSpare.poolId, {
+                            availabilityStatus: "Available",
+                            mitigationId: null, mitigationNumber: null, employeeName: null
+                        }).catch(function (oErr) {
+                            MessageBox.warning(
+                                "Reservation release saved locally but could not be persisted.\n\nError: " + (oErr.message || oErr),
+                                { title: "OData Write Failed" }
+                            );
+                        });
                     }
                 }
             );

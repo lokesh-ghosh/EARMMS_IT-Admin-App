@@ -132,23 +132,27 @@
                                     press=".onPendingMRPress">
                                     <content>
                                         <VBox class="quickListItem">
-                                            <HBox alignItems="Center" class="mb025">
-                                                <ObjectStatus
-                                                    text="{businessImpact}"
-                                                    state="{path: 'businessImpact', formatter: '.formatter.impactToState'}"/>
-                                                <Label text="{mitigationNumber}" class="textBold ml05"/>
-                                                <ToolbarSpacer/>
+                                            <!-- Priority + MR# row -->
+                                            <HBox alignItems="Center" class="mb025" justifyContent="SpaceBetween">
+                                                <HBox alignItems="Center">
+                                                    <ObjectStatus
+                                                        text="{businessImpact}"
+                                                        state="{path: 'businessImpact', formatter: '.formatter.impactToState'}"
+                                                        class="mr05"/>
+                                                    <Label text="{mitigationNumber}" class="textBold textInfo"/>
+                                                </HBox>
                                                 <Label text="{path: 'raisedOn', formatter: '.formatter.formatDate'}" class="textSmall textMuted"/>
                                             </HBox>
-                                            <HBox alignItems="Center" class="mb025">
-                                                <core:Icon src="sap-icon://employee" size="0.875rem" color="#6b7280" class="mr05"/>
-                                                <Label text="{employeeName}" class="textSmall"/>
-                                                <Label text=" · " class="textSmall textMuted"/>
-                                                <Label text="{department}" class="textSmall textMuted"/>
-                                                <Label text="  |  Asset: " class="textSmall textMuted ml05"/>
-                                                <Label text="{assetTag}" class="textSmall textBold"/>
+                                            <!-- Employee + Asset row -->
+                                            <HBox alignItems="Center" class="mb025" wrap="Wrap">
+                                                <core:Icon src="sap-icon://employee" size="0.75rem" color="#64748b" class="mr025"/>
+                                                <Label text="{= ${employeeName} || '—' }" class="textSmall textBold mr025"/>
+                                                <Label text="{= ${department} ? '· ' + ${department} : '' }" class="textSmall textMuted mr05"/>
+                                                <core:Icon src="sap-icon://laptop" size="0.75rem" color="#64748b" class="mr025" visible="{= !!${assetTag} }"/>
+                                                <Label text="{= ${assetTag} || '' }" class="textSmall textBold"/>
                                             </HBox>
-                                            <Text text="{urgencyReason}" maxLines="2" class="textSmall textMuted"/>
+                                            <!-- Urgency reason -->
+                                            <Text text="{urgencyReason}" maxLines="2" class="quickUrgencyText"/>
                                         </VBox>
                                     </content>
                                 </CustomListItem>
@@ -163,20 +167,20 @@
                             <Label text="SLA Status Overview" class="textBold"/>
                         </HBox>
 
-                        <HBox justifyContent="SpaceBetween" class="mb1">
-                            <VBox alignItems="Center">
+                        <HBox justifyContent="SpaceBetween" class="mb1 slaStatsRow">
+                            <VBox alignItems="Center" class="slaStatBox statInfo">
                                 <Title text="{/kpis/openTickets}" level="H2" class="textInfo"/>
                                 <Label text="Total Active" class="textSmall textMuted"/>
                             </VBox>
-                            <VBox alignItems="Center">
-                                <Title text="{= ${/kpis/openTickets} - ${/kpis/breachedCount} - ${/kpis/atRiskCount} }" level="H2" class="textSuccess"/>
+                            <VBox alignItems="Center" class="slaStatBox statSuccess">
+                                <Title text="{= ${/kpis/openTickets} > ${/kpis/breachedCount} + ${/kpis/atRiskCount} ? ${/kpis/openTickets} - ${/kpis/breachedCount} - ${/kpis/atRiskCount} : 0 }" level="H2" class="textSuccess"/>
                                 <Label text="On Track" class="textSmall textMuted"/>
                             </VBox>
-                            <VBox alignItems="Center">
+                            <VBox alignItems="Center" class="slaStatBox statWarning">
                                 <Title text="{/kpis/atRiskCount}" level="H2" class="textWarning"/>
                                 <Label text="At Risk" class="textSmall textMuted"/>
                             </VBox>
-                            <VBox alignItems="Center">
+                            <VBox alignItems="Center" class="slaStatBox statError">
                                 <Title text="{/kpis/breachedCount}" level="H2" class="textError"/>
                                 <Label text="Breached" class="textSmall textMuted"/>
                             </VBox>
@@ -190,7 +194,7 @@
                             class="mb05"/>
 
                         <Label text="Average MTTR" class="textSmall textBold mb025 mt05"/>
-                        <HBox alignItems="Center">
+                        <HBox alignItems="Center" class="mttrBox">
                             <core:Icon src="sap-icon://time-overtime" color="#0070f2" class="mr05"/>
                             <Title text="{/kpis/mttr}" level="H3" class="textInfo"/>
                             <Label text=" hours" class="textSmall textMuted ml05"/>
@@ -207,12 +211,53 @@
                         <Button text="View All Requests" type="Transparent" press=".onNavigateRR"/>
                     </HBox>
 
+                    <!-- Filter / Search / Sort bar -->
+                    <HBox class="dashFilterBar" alignItems="Center" wrap="Wrap">
+                        <SearchField
+                            id="dashRRSearch"
+                            placeholder="Search RR#, asset, employee…"
+                            width="16rem"
+                            liveChange=".onDashRRSearch"
+                            class="mr05"/>
+                        <Select id="dashRRStatus" change=".onDashRRFilter" class="mr05">
+                            <core:Item key="" text="All Status"/>
+                            <core:Item key="Open" text="Open"/>
+                            <core:Item key="Assigned" text="Assigned"/>
+                            <core:Item key="InProgress" text="In Progress"/>
+                            <core:Item key="Resolved" text="Resolved"/>
+                            <core:Item key="Closed" text="Closed"/>
+                        </Select>
+                        <Select id="dashRRSeverity" change=".onDashRRFilter" class="mr05">
+                            <core:Item key="" text="All Severity"/>
+                            <core:Item key="High" text="High"/>
+                            <core:Item key="Medium" text="Medium"/>
+                            <core:Item key="Low" text="Low"/>
+                        </Select>
+                        <Select id="dashRRSort" change=".onDashRRSort" class="mr05">
+                            <core:Item key="" text="Sort: Default"/>
+                            <core:Item key="raisedOn_desc" text="Newest First"/>
+                            <core:Item key="raisedOn_asc" text="Oldest First"/>
+                            <core:Item key="severity" text="By Severity"/>
+                            <core:Item key="slaStatus" text="By SLA Status"/>
+                        </Select>
+                        <ToolbarSpacer/>
+                        <Button
+                            text="Clear"
+                            type="Transparent"
+                            press=".onDashRRClear"
+                            icon="sap-icon://clear-filter"
+                            class="textSmall"/>
+                    </HBox>
+
                     <Table
                         id="recentRRTable"
-                        items="{path: '/repairRequests', length: 5}"
+                        items="{/repairRequests}"
                         class="earmmsTable"
                         showSeparators="Inner"
-                        alternateRowColors="false">
+                        growing="true"
+                        growingThreshold="5"
+                        alternateRowColors="false"
+                        noDataText="No matching requests found">
                         <columns>
                             <Column width="9rem"><header><Label text="RR Number" class="textBold textSmall"/></header></Column>
                             <Column><header><Label text="Asset" class="textBold textSmall"/></header></Column>

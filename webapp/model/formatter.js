@@ -27,6 +27,10 @@ sap.ui.define([], function () {
         impactToState: function (s) {
             return { Critical: "Error", High: "Warning", Medium: "Information" }[s] || "None";
         },
+        impactToCardClass: function (s) {
+            var map = { Critical: "mrPendingCard impactCritical", High: "mrPendingCard impactHigh", Medium: "mrPendingCard impactMedium" };
+            return map[s] || "mrPendingCard impactHigh";
+        },
 
         // ── Technician load ─────────────────────────────────────────
         loadToPercent: function (n, m) {

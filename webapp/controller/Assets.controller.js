@@ -1,16 +1,13 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
+    "sap/ui/core/HTML",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
     "sap/m/Dialog",
     "sap/m/Button",
-    "sap/m/VBox",
-    "sap/m/HBox",
-    "sap/m/Label",
-    "sap/m/ObjectStatus",
     "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/formatter"
-], function (Controller, Filter, FilterOperator, MessageToast, Dialog, Button, VBox, HBox, Label, ObjectStatus, formatter) {
+], function (Controller, HTML, Filter, FilterOperator, MessageToast, Dialog, Button, formatter) {
     "use strict";
 
     return Controller.extend("com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.Assets", {
@@ -58,40 +55,65 @@ sap.ui.define([
         },
 
         onAssetPress: function (oEvent) {
-            var oCtx   = oEvent.getSource().getBindingContext();
+            var oCtx = oEvent.getSource().getBindingContext();
             if (!oCtx) { return; }
             var oAsset = oCtx.getObject();
-            var that   = this;
+
+            var s  = function (v) { return (v != null && v !== "") ? String(v) : "—"; };
+            var sc = { Success: "#16a34a", Warning: "#d97706", Error: "#dc2626", Information: "#2563eb", None: "#64748b" };
+            var col = function (state) { return sc[state] || "#334155"; };
+
+            var statusState = formatter.assetStatusToState(oAsset.status);
+            var makeModel   = [oAsset.make, oAsset.model].filter(Boolean).join(" ") || "—";
+            var sAge = oAsset.purchaseDate
+                ? Math.floor((new Date() - new Date(oAsset.purchaseDate)) / (365.25 * 24 * 3600 * 1000)) + " yr(s)"
+                : "—";
+
+            function sb(lbl, val, color) {
+                return '<div class="dlgSB"><div class="dlgSBLabel">' + lbl + '</div>' +
+                       '<div class="dlgSBValue" style="color:' + color + '">' + s(val) + '</div></div>';
+            }
+            function fi(lbl, val) {
+                return '<div class="dlgFI"><div class="dlgFILabel">' + lbl + '</div>' +
+                       '<div class="dlgFIValue">' + s(val) + '</div></div>';
+            }
+            function sec(title, body) {
+                return '<div class="dlgSec"><div class="dlgSecTitle">' + title + '</div>' + body + '</div>';
+            }
+
+            var sHtml = '<div class="dlgBody">' +
+                sec("Identity",
+                    '<div class="dlgSBRow">' +
+                    sb("Asset Tag",    oAsset.assetTag,      "#2563eb")          +
+                    sb("Type",         oAsset.typeName,      "#334155")          +
+                    sb("Status",       oAsset.status,        col(statusState))   +
+                    sb("Serial #",     oAsset.serialNumber,  "#334155")          +
+                    '</div>') +
+                sec("Hardware",
+                    '<div class="dlgFRow">' +
+                    fi("Make",        oAsset.make)   +
+                    fi("Model",       oAsset.model)  +
+                    fi("Make / Model", makeModel)    +
+                    '</div>') +
+                sec("Assignment",
+                    '<div class="dlgFRow">' +
+                    fi("Current Owner", oAsset.ownerName || "Unassigned") +
+                    fi("Location",      oAsset.location)                  +
+                    fi("Department",    oAsset.department)                +
+                    '</div>') +
+                sec("Lifecycle",
+                    '<div class="dlgFRow">' +
+                    fi("Purchase Date",   formatter.formatDate(oAsset.purchaseDate))    +
+                    fi("Warranty Expiry", formatter.formatDate(oAsset.warrantyExpiry))  +
+                    fi("Asset Age",       sAge)                                         +
+                    '</div>') +
+                '</div>';
 
             var oDialog = new Dialog({
-                title: "Asset Details — " + oAsset.assetTag,
-                contentWidth: "520px",
-                content: [
-                    new HBox({ renderType: "Bare", class: "mb1", wrap: "Wrap" }).addItem(
-                        new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Asset Tag", design: "Bold" })).addItem(new Label({ text: oAsset.assetTag }))
-                    ).addItem(
-                        new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Type", design: "Bold" })).addItem(new Label({ text: oAsset.typeName }))
-                    ).addItem(
-                        new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Status", design: "Bold" })).addItem(new ObjectStatus({ text: oAsset.status, state: formatter.assetStatusToState(oAsset.status) }))
-                    ),
-                    new HBox({ renderType: "Bare", class: "mb1", wrap: "Wrap" }).addItem(
-                        new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Make", design: "Bold" })).addItem(new Label({ text: oAsset.make }))
-                    ).addItem(
-                        new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Model", design: "Bold" })).addItem(new Label({ text: oAsset.model }))
-                    ).addItem(
-                        new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Serial Number", design: "Bold" })).addItem(new Label({ text: oAsset.serialNumber }))
-                    ),
-                    new HBox({ renderType: "Bare", class: "mb1", wrap: "Wrap" }).addItem(
-                        new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Current Owner", design: "Bold" })).addItem(new Label({ text: oAsset.ownerName || "Unassigned" }))
-                    ).addItem(
-                        new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Location", design: "Bold" })).addItem(new Label({ text: oAsset.location }))
-                    ),
-                    new HBox({ renderType: "Bare", wrap: "Wrap" }).addItem(
-                        new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Purchase Date", design: "Bold" })).addItem(new Label({ text: formatter.formatDate(oAsset.purchaseDate) }))
-                    ).addItem(
-                        new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Warranty Expiry", design: "Bold" })).addItem(new Label({ text: formatter.formatDate(oAsset.warrantyExpiry) }))
-                    )
-                ],
+                title: "Asset Details — " + s(oAsset.assetTag),
+                contentWidth: "560px",
+                verticalScrolling: true,
+                content: [new HTML({ content: sHtml })],
                 buttons: [new Button({ text: "Close", press: function () { oDialog.close(); } })],
                 afterClose: function () { oDialog.destroy(); }
             });

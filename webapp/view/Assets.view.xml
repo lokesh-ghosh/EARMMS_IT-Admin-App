@@ -20,20 +20,20 @@
                 </HBox>
 
                 <!-- ── Asset Status Summary ── -->
-                <HBox class="mb1" wrap="Wrap">
-                    <VBox class="earmmsCard mr1" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                <HBox class="assetStatRow mb1">
+                    <VBox class="assetStatCard statSuccess" alignItems="Center" justifyContent="Center">
                         <Title text="{path: '/assets', formatter: '.formatter.countAssetsActive'}" level="H2" class="textSuccess"/>
                         <Label text="Active" class="textSmall textMuted"/>
                     </VBox>
-                    <VBox class="earmmsCard mr1" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                    <VBox class="assetStatCard statWarning" alignItems="Center" justifyContent="Center">
                         <Title text="{path: '/assets', formatter: '.formatter.countAssetsUnderRepair'}" level="H2" class="textWarning"/>
                         <Label text="Under Repair" class="textSmall textMuted"/>
                     </VBox>
-                    <VBox class="earmmsCard mr1" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                    <VBox class="assetStatCard statError" alignItems="Center" justifyContent="Center">
                         <Title text="{path: '/assets', formatter: '.formatter.countAssetsInMitigation'}" level="H2" class="textError"/>
                         <Label text="In Mitigation" class="textSmall textMuted"/>
                     </VBox>
-                    <VBox class="earmmsCard" style="flex:1 1 120px; min-width:110px; text-align:center; width:auto;">
+                    <VBox class="assetStatCard statMuted" alignItems="Center" justifyContent="Center">
                         <Title text="{path: '/assets', formatter: '.formatter.countAssetsRetired'}" level="H2" class="textMuted"/>
                         <Label text="Retired" class="textSmall textMuted"/>
                     </VBox>

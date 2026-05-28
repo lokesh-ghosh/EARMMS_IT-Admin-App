@@ -1,5 +1,6 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
+    "sap/ui/core/HTML",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
@@ -13,9 +14,10 @@ sap.ui.define([
     "sap/m/Text",
     "sap/m/ObjectStatus",
     "sap/ui/core/Item",
-    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/formatter"
-], function (Controller, Filter, FilterOperator, MessageToast, MessageBox,
-    Dialog, Button, VBox, HBox, Label, Select, Text, ObjectStatus, Item, formatter) {
+    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/formatter",
+    "com/wipro/earmms/itadmin/app/earmmsitadminapp/model/dataService"
+], function (Controller, HTML, Filter, FilterOperator, MessageToast, MessageBox,
+    Dialog, Button, VBox, HBox, Label, Select, Text, ObjectStatus, Item, formatter, dataService) {
     "use strict";
 
     return Controller.extend("com.wipro.earmms.itadmin.app.earmmsitadminapp.controller.RepairRequests", {
@@ -167,69 +169,85 @@ sap.ui.define([
                 oRR.technicianId = sTechId;
                 oRR.technicianName = oTech.name;
                 oTech.currentLoad += 1;
-                oData.kpis.openTickets = oData.repairRequests.filter(function (r) {
-                    return ["Open", "Assigned", "InProgress"].indexOf(r.status) > -1;
-                }).length;
+                oData.kpis = dataService.computeKpis(oData);
                 oModel.refresh(true);
                 MessageToast.show("Technician " + oTech.name + " assigned to " + oRR.requestNumber);
+                this._oAssignDialog.close();
+
+                dataService.patchAssignTechnician(oRR.requestId, sTechId, oTech.name, oTech.currentLoad)
+                    .catch(function (oErr) {
+                        MessageBox.warning(
+                            "Assignment saved locally but could not be persisted to the server.\n\nError: " + (oErr.message || oErr),
+                            { title: "OData Write Failed" }
+                        );
+                    });
             }
-            this._oAssignDialog.close();
         },
 
         _showRRDetail: function (oRR) {
             var that = this;
-            if (this._oDetailDialog) { this._oDetailDialog.destroy(); }
+            var s  = function (v) { return (v != null && v !== "") ? String(v) : "—"; };
+            var sc = { Success: "#16a34a", Warning: "#d97706", Error: "#dc2626", Information: "#2563eb", None: "#64748b" };
+            var col = function (state) { return sc[state] || "#64748b"; };
 
             var slaState = formatter.slaToState(oRR.slaStatus);
             var sevState = formatter.severityToState(oRR.severity);
             var rrState  = formatter.rrStatusToState(oRR.status);
 
-            var aContent = [
-                new HBox({ renderType: "Bare", class: "mb1", wrap: "Wrap" }).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "RR Number", design: "Bold" })).addItem(new Label({ text: oRR.requestNumber }))
-                ).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Status", design: "Bold" })).addItem(new ObjectStatus({ text: oRR.status, state: rrState }))
-                ).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Severity", design: "Bold" })).addItem(new ObjectStatus({ text: oRR.severity, state: sevState }))
-                ).addItem(
-                    new VBox({ renderType: "Bare" }).addItem(new Label({ text: "SLA Status", design: "Bold" })).addItem(new ObjectStatus({ text: oRR.slaStatus, state: slaState }))
-                ),
-                new HBox({ renderType: "Bare", class: "mb1", wrap: "Wrap" }).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Asset Tag", design: "Bold" })).addItem(new Label({ text: oRR.assetTag }))
-                ).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Asset Type", design: "Bold" })).addItem(new Label({ text: oRR.assetType + " (" + oRR.assetMake + " " + oRR.assetModel + ")" }))
-                ).addItem(
-                    new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Category", design: "Bold" })).addItem(new Label({ text: oRR.issueCategory }))
-                ),
-                new HBox({ renderType: "Bare", class: "mb1", wrap: "Wrap" }).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Raised By", design: "Bold" })).addItem(new Label({ text: oRR.employeeName + " (" + oRR.department + ")" }))
-                ).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Raised On", design: "Bold" })).addItem(new Label({ text: formatter.formatDateTime(oRR.raisedOn) }))
-                ).addItem(
-                    new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Expected Resolution", design: "Bold" })).addItem(new Label({ text: formatter.formatDateTime(oRR.expectedResolution) }))
-                ),
-                new VBox({ renderType: "Bare", class: "mb1" }).addItem(new Label({ text: "Issue Description", design: "Bold", class: "mb025" })).addItem(new Text({ text: oRR.issueDescription })),
-                new HBox({ renderType: "Bare", class: "mb1", wrap: "Wrap" }).addItem(
-                    new VBox({ renderType: "Bare", class: "mr1" }).addItem(new Label({ text: "Assigned Technician", design: "Bold" })).addItem(new Label({ text: oRR.technicianName || "Not Assigned" }))
-                ).addItem(
-                    new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Actual Resolution", design: "Bold" })).addItem(new Label({ text: formatter.formatDateTime(oRR.actualResolution) }))
-                )
-            ];
-
-            if (oRR.resolutionNotes) {
-                aContent.push(
-                    new VBox({ renderType: "Bare" }).addItem(new Label({ text: "Resolution Notes", design: "Bold", class: "mb025" })).addItem(new Text({ text: oRR.resolutionNotes }))
-                );
+            function sb(lbl, val, color) {
+                return '<div class="dlgSB"><div class="dlgSBLabel">' + lbl + '</div>' +
+                       '<div class="dlgSBValue" style="color:' + color + '">' + s(val) + '</div></div>';
             }
+            function fi(lbl, val) {
+                return '<div class="dlgFI"><div class="dlgFILabel">' + lbl + '</div>' +
+                       '<div class="dlgFIValue">' + s(val) + '</div></div>';
+            }
+            function sec(title, body) {
+                return '<div class="dlgSec"><div class="dlgSecTitle">' + title + '</div>' + body + '</div>';
+            }
+
+            var assetDesc = [oRR.assetType, oRR.assetMake, oRR.assetModel].filter(Boolean).join(" · ") || "—";
+            var raisedBy  = [oRR.employeeName, oRR.department ? "(" + oRR.department + ")" : ""].filter(Boolean).join(" ") || "—";
+
+            var sHtml = '<div class="dlgBody">' +
+                sec("Summary",
+                    '<div class="dlgSBRow">' +
+                    sb("RR Number",  oRR.requestNumber, "#2563eb")             +
+                    sb("Status",     oRR.status,        col(rrState))          +
+                    sb("Severity",   oRR.severity,      col(sevState))         +
+                    sb("SLA Status", oRR.slaStatus,     col(slaState))         +
+                    '</div>') +
+                sec("Asset Details",
+                    '<div class="dlgFRow">' +
+                    fi("Asset Tag",  oRR.assetTag)   +
+                    fi("Asset Type", assetDesc)       +
+                    fi("Category",   oRR.issueCategory) +
+                    '</div>') +
+                sec("Raised By &amp; Timeline",
+                    '<div class="dlgFRow">' +
+                    fi("Raised By",           raisedBy)                                   +
+                    fi("Raised On",           formatter.formatDateTime(oRR.raisedOn))      +
+                    fi("Expected Resolution", formatter.formatDateTime(oRR.expectedResolution)) +
+                    '</div>') +
+                sec("Issue Description",
+                    '<div class="dlgDescBlock">' + (oRR.issueDescription || "—") + '</div>') +
+                sec("Resolution",
+                    '<div class="dlgFRow">' +
+                    fi("Assigned Technician", oRR.technicianName || "Not Assigned") +
+                    fi("Actual Resolution",   formatter.formatDateTime(oRR.actualResolution)) +
+                    '</div>') +
+                (oRR.resolutionNotes ?
+                    sec("Resolution Notes", '<div class="dlgDescBlock">' + oRR.resolutionNotes + '</div>') : "") +
+                '</div>';
 
             var aButtons = [
                 new Button({ text: "Close", press: function () { that._oDetailDialog.close(); } })
             ];
-
             if (oRR.status === "Open") {
                 aButtons.unshift(new Button({
                     text: "Assign Technician",
                     type: "Emphasized",
+                    icon: "sap-icon://employee",
                     press: function () {
                         that._oDetailDialog.close();
                         that._oCurrentRR = oRR;
@@ -238,14 +256,15 @@ sap.ui.define([
                 }));
             }
 
+            if (this._oDetailDialog) { this._oDetailDialog.destroy(); }
             this._oDetailDialog = new Dialog({
-                title: "Repair Request — " + oRR.requestNumber,
+                title: "Repair Request — " + s(oRR.requestNumber),
                 contentWidth: "600px",
-                content: aContent,
+                verticalScrolling: true,
+                content: [new HTML({ content: sHtml })],
                 buttons: aButtons,
                 afterClose: function () { that._oDetailDialog.destroy(); that._oDetailDialog = null; }
             });
-
             this.getView().addDependent(this._oDetailDialog);
             this._oDetailDialog.open();
         },

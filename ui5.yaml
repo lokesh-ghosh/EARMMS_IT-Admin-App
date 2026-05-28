@@ -15,6 +15,9 @@ server:
             - /resources
             - /test-resources
           url: https://ui5.sap.com
+        backend:
+          - path: /odata/v4/earmms
+            url: https://99a4398ctrial-dev-earmms-srv.cfapps.us10-001.hana.ondemand.com
     - name: fiori-tools-preview
       afterMiddleware: compression
       configuration:

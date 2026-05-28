@@ -27,3 +27,12 @@ server:
       afterMiddleware: compression
       configuration:
         ignoreCertErrors: false # If set to true, certificate errors will be ignored. E.g. self-signed certificates will be accepted
+        ui5:
+          path:
+            - /resources
+            - /test-resources
+          url: https://ui5.sap.com
+          version: "1.147.2"
+        backend:
+          - path: /odata/v4/earmms
+            url: https://99a4398ctrial-dev-earmms-srv.cfapps.us10-001.hana.ondemand.com

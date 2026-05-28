@@ -51,41 +51,48 @@
                                         <items>
                                             <CustomListItem type="Inactive">
                                                 <content>
-                                                    <VBox class="mrPendingCard">
-                                                        <!-- Card Header -->
-                                                        <HBox class="mb05" alignItems="Center">
-                                                            <Label text="{mitigationNumber}" class="textBold textInfo mr1"/>
-                                                            <ObjectStatus
-                                                                text="{businessImpact}"
-                                                                state="{path: 'businessImpact', formatter: '.formatter.impactToState'}"
-                                                                class="mr1"/>
-                                                            <Label text="Linked:" class="textSmall textMuted mr05"/>
-                                                            <Label text="{linkedRepairNumber}" class="textSmall textBold"/>
-                                                            <ToolbarSpacer/>
+                                                    <VBox class="{path: 'businessImpact', formatter: '.formatter.impactToCardClass'}">
+                                                        <!-- Top Row: Impact + MR# + Linked RR + Date -->
+                                                        <HBox alignItems="Center" class="mb05" justifyContent="SpaceBetween">
+                                                            <HBox alignItems="Center">
+                                                                <ObjectStatus
+                                                                    text="{businessImpact}"
+                                                                    state="{path: 'businessImpact', formatter: '.formatter.impactToState'}"
+                                                                    class="mr1"/>
+                                                                <Label text="{mitigationNumber}" class="textBold textInfo mrNumLabel mr1"/>
+                                                                <core:Icon src="sap-icon://chain-link" size="0.75rem" color="#94a3b8" class="mr025" visible="{= !!${linkedRepairNumber} }"/>
+                                                                <Label text="{linkedRepairNumber}" class="textSmall textMuted" visible="{= !!${linkedRepairNumber} }"/>
+                                                            </HBox>
                                                             <Label text="{path: 'raisedOn', formatter: '.formatter.formatDateTime'}" class="textSmall textMuted"/>
                                                         </HBox>
 
-                                                        <!-- Employee Info -->
-                                                        <HBox class="mb05" alignItems="Center">
-                                                            <core:Icon src="sap-icon://employee" size="0.875rem" color="#6b7280" class="mr05"/>
-                                                            <Label text="{employeeName}" class="textBold textSmall mr05"/>
-                                                            <Label text="·" class="textSmall textMuted mr05"/>
-                                                            <Label text="{department}" class="textSmall textMuted mr1"/>
-                                                            <core:Icon src="sap-icon://laptop" size="0.875rem" color="#6b7280" class="mr05"/>
-                                                            <Label text="{assetTag}" class="textSmall textBold"/>
-                                                            <Label text=" ({assetType})" class="textSmall textMuted"/>
+                                                        <!-- Info chips: Employee + Asset -->
+                                                        <HBox alignItems="Center" class="mb05" wrap="Wrap">
+                                                            <HBox alignItems="Center" class="mrInfoChip">
+                                                                <core:Icon src="sap-icon://employee" size="0.8125rem" color="#2563eb" class="mr025"/>
+                                                                <Label text="{= ${employeeName} || '—' }" class="textSmall textBold mr025"/>
+                                                                <Label text="{= ${department} ? '· ' + ${department} : '' }" class="textSmall textMuted"/>
+                                                            </HBox>
+                                                            <HBox alignItems="Center" class="mrInfoChip">
+                                                                <core:Icon src="sap-icon://laptop" size="0.8125rem" color="#2563eb" class="mr025"/>
+                                                                <Label text="{= ${assetTag} || '—' }" class="textSmall textBold mr025"/>
+                                                                <Label text="{= ${assetType} ? '(' + ${assetType} + ')' : '' }" class="textSmall textMuted"/>
+                                                            </HBox>
                                                         </HBox>
 
-                                                        <!-- Urgency Reason -->
-                                                        <VBox class="mb1">
-                                                            <Label text="Urgency Reason:" class="textSmall textBold mb025"/>
-                                                            <Text text="{urgencyReason}" maxLines="3" class="textSmall"/>
+                                                        <!-- Urgency Callout -->
+                                                        <VBox class="mrUrgencyBox">
+                                                            <HBox alignItems="Center" class="mb025">
+                                                                <core:Icon src="sap-icon://alert" size="0.75rem" color="#d97706" class="mr025"/>
+                                                                <Label text="Urgency Reason" class="textSmall textBold textWarning"/>
+                                                            </HBox>
+                                                            <Text text="{urgencyReason}" maxLines="2" class="textSmall"/>
                                                         </VBox>
 
                                                         <!-- Action Buttons -->
-                                                        <HBox justifyContent="End">
+                                                        <HBox justifyContent="End" alignItems="Center" class="mrCardActions">
                                                             <Button
-                                                                text="View Details"
+                                                                text="Details"
                                                                 type="Transparent"
                                                                 icon="sap-icon://detail-view"
                                                                 press=".onViewMRDetail"
